@@ -1,12 +1,26 @@
 # Smart Job Tracker - Microservices Ecosystem
 
-## 📊 Project Overview
+## Project Overview
 
-The **Smart Job Tracker** is a resilient, observable microservices-based application designed to help users track job applications, notes, statuses, and overall progress. It integrates best practices around **self-healing**, **dependency isolation**, **distributed tracing**, **metrics collection**, and **log aggregation**.
+The **Smart Job Tracker** is a resilient, observable microservices-based application designed to help users track job applications, notes, statuses, and overall progress. 
+It integrates best practices around **self-healing**, **dependency isolation**, **distributed tracing**, **metrics collection**, and **log aggregation**.
+
+1. Health Tracking: 
+   * Monitoring whether a service is alive and functioning correctly, especially during startup or in runtime.
+   * FastAPI already has a /health endpoint in the Application Service.
+   * In Kubernetes, defined readiness & liveness probes to automatically restart or isolate it.
+
+2. Dependency Isolation:
+   * Each service, application-service, auth-service, etc is containerized using Docker and has its own SQLite.
+   * Kubernetes is handling service isolation using pods and network policies with retry logic and circuit breakers with httpx + tenacity.
+
+3. Observability Patterns:
+   * Each serivce has techniques to monitor, trace, and analyze system behavior through Logs, Metrics, Traces
+   * Prometheus + fastapi-instrumentator, OpenTelemetry + OTLP, Python logging, Grafana
 
 ---
 
-## ⚙️ Architecture Diagram
+## Architecture Diagram
 
 ```
                   +------------------+
@@ -42,7 +56,7 @@ The **Smart Job Tracker** is a resilient, observable microservices-based applica
 
 ---
 
-## 🚀 Services
+## Services
 
 ### 1. Application Service
 
@@ -52,12 +66,12 @@ The **Smart Job Tracker** is a resilient, observable microservices-based applica
 * Integrated with **OpenTelemetry (OTLP)** for distributed tracing.
 * Exposes `/prometheus` for Prometheus scraping.
 
-### 2. Notification Service
+### Notification Service
 
 * Sends email or system notifications about application updates.
 * Uses a pub/sub or direct API pattern.
 
-### 3. Observability Stack
+### Observability Stack
 
 * **OpenTelemetry Collector**: Gathers traces and metrics.
 * **Jaeger**: Visualizes distributed tracing.
@@ -66,7 +80,7 @@ The **Smart Job Tracker** is a resilient, observable microservices-based applica
 
 ---
 
-## 🧰 Technologies Used
+## Technologies Used
 
 | Technology           | Purpose                            |
 | -------------------- | ---------------------------------- |
@@ -81,7 +95,7 @@ The **Smart Job Tracker** is a resilient, observable microservices-based applica
 
 ---
 
-## 📚 How to Run
+## How to Run
 
 ### 1. Prerequisites
 
@@ -110,7 +124,7 @@ docker-compose up --build
 
 ---
 
-## 📝 Environment Variables (Optional)
+## Environment Variables (Optional)
 
 You may define `.env` files or Docker secrets for configuration:
 
@@ -122,7 +136,7 @@ DATABASE_PATH=/data/applications.db
 
 ---
 
-## 🚧 Development & Testing
+## Development & Testing
 
 ```bash
 # Run locally
@@ -132,3 +146,81 @@ uvicorn app.main:app --reload
 pytest tests/
 ```
 
+## Running on Kubernetes
+
+### Prerequisites:
+
+* Docker Desktop with Kubernetes enabled
+
+* kubectl CLI installed
+
+ 
+### Steps:
+
+### Build and Push Images
+
+```commandline
+docker build -t your-dockerhub/app-service ./services/application-service
+docker push your-dockerhub/app-service
+```
+
+
+### Apply Kubernetes Configurations
+```commandline
+
+kubectl apply -f k8/base/application-service/ 
+kubectl apply -f k8/base/otel/ 
+kubectl apply -f application-tracker-backend/k8/prometheus/ 
+kubectl apply -f application-tracker-backend/k8/grafana/
+```
+Another Way
+```commandline
+kubectl apply -R -f k8/base/
+```
+
+
+### Verify Pods
+````commandline
+kubectl get pods
+kubectl describe pod <pod-name>
+kubectl logs <pod-name>
+````
+
+
+### Port Forward to Access Services with Debugging
+```commandline
+kubectl port-forward svc/application-service 8000:80
+kubectl port-forward svc/prometheus 9090:9090
+kubectl port-forward svc/grafana 3000:3000
+```
+
+
+### View Logs
+```commandline
+kubectl logs -f <pod-name>
+```
+
+
+### Delete Old Deployments
+
+```commandline
+kubectl delete deployment application-service
+kubectl delete pod <pod-name>
+kubectl delete svc application-service
+```
+
+
+## Metrics & Observability
+
+Prometheus scrapes /prometheus endpoint on the application-service
+
+Grafana dashboards visualize performance, latency, and uptime
+
+OTEL Collector collects traces via port 4318
+
+## Clean Up
+
+```commandline
+kubectl delete -f k8s/
+docker-compose down -v
+```

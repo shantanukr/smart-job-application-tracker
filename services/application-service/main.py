@@ -23,7 +23,7 @@ resource = Resource(attributes={
 
 # Set tracer provider and span processor
 provider = TracerProvider(resource=resource)
-otlp_exporter = OTLPSpanExporter(endpoint="http://otel-collector:4318/v1/traces")  # ✅ Correct Docker DNS
+otlp_exporter = OTLPSpanExporter(endpoint="http://otel-collector:4318/v1/traces")
 span_processor = BatchSpanProcessor(otlp_exporter)
 provider.add_span_processor(span_processor)
 
