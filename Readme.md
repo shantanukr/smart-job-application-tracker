@@ -117,7 +117,8 @@ docker-compose up --build
 
 ### 4. Access Services
 
-* **Application Service API**: [http://localhost:8000/docs](http://localhost:8000/docs)
+* **Application Service API**: [http://localhost:8000/api/v1/applications](http://localhost:8000/api/v1/applications)
+* **Health**: [http://localhost:8000/api/v1/health](http://localhost:8000/api/v1/health)
 * **Prometheus Metrics**: [http://localhost:9090](http://localhost:9090)
 * **Jaeger UI**: [http://localhost:16686](http://localhost:16686)
 * **Grafana**: [http://localhost:3000](http://localhost:3000) (admin/admin)
