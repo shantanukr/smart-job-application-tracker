@@ -6,6 +6,20 @@ services:
     ports:
       - "8000:8000"
     environment:
+      - OTEL_SERVICE_NAME=application-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+    depends_on:
+      - otel-collector
+    networks:
+      - observability
+  recommendation:
+    build:
+      context: ./services/recommendation-service
+    container_name: recommendation
+    ports:
+      - "8001:8001"
+    environment:
+      - OTEL_SERVICE_NAME=recommendation-service
       - OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
     depends_on:
       - otel-collector
